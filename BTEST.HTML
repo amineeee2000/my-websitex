@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi des Cotisations</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #2c3e50;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .year-selector {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .year-selector label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .year-selector select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .add-member-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .add-member-form input {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 200px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .btn-add {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-add:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-save {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .btn-save:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn-print {
+            background-color: #9b59b6;
+            color: white;
+        }
+        
+        .btn-print:hover {
+            background-color: #8e44ad;
+        }
+        
+        .btn-clear {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-clear:hover {
+            background-color: #c0392b;
+        }
+        
+        .info-box {
+            background-color: #e8f4fc;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+            font-size: 14px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+        
+        th {
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: 1px solid #34495e;
+        }
+        
+        td {
+            padding: 10px 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+        
+        .name-cell {
+            font-weight: bold;
+            background-color: #f8f9fa;
+            min-width: 120px;
+        }
+        
+        .checkbox-cell {
+            width: 60px;
+            cursor: pointer;
+        }
+        
+        .checkbox {
+            width: 30px;
+            height: 30px;
+            margin: 0 auto;
+            border: 2px solid #e74c3c;
+            border-radius: 4px;
+            background-color: #ffebee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #c62828;
+            transition: all 0.3s;
+        }
+        
+        .checkbox.paid {
+            background-color: #e8f5e9;
+            border-color: #2ecc71;
+            color: #27ae60;
+        }
+        
+        .total-cell {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            margin-left: 5px;
+            font-size: 12px;
+        }
+        
+        .footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        /* Styles pour l'impression */
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+                font-size: 12px;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 10px;
+                max-width: 100%;
+                margin: 0;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+                margin-bottom: 5px;
+            }
+            
+            .controls, .info-box, .footer, .year-selector {
+                display: none !important;
+            }
+            
+            table {
+                min-width: 100%;
+                font-size: 11px;
+            }
+            
+            th {
+                padding: 8px 4px;
+                font-size: 11px;
+            }
+            
+            td {
+                padding: 6px 4px;
+                font-size: 11px;
+            }
+            
+            .checkbox {
+                width: 22px;
+                height: 22px;
+                font-size: 12px;
+            }
+            
+            .name-cell {
+                min-width: 100px;
+            }
+            
+            /* Optimisation pour A4 */
+            @page {
+                size: A4;
+                margin: 1.5cm;
+            }
+            
+            body, .container, table {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .modal-message {
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            .add-member-form input {
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SUIVI DES COTISATIONS</h1>
+            <div class="year-selector">
+                <label for="year">Année :</label>
+                <select id="year">
+                    <option value="2024">2024</option>
+                    <option value="2025" selected>2025</option>
+                    <option value="2026">2026</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <strong>Information :</strong> Chaque case cochée représente un paiement de <strong>500 DA</strong>. 
+            Cliquez sur une case pour marquer le paiement (X). Montant dû = cases vides × 500 DA.
+        </div>
+        
+        <div class="controls">
+            <div class="add-member-form">
+                <input type="text" id="newMemberName" placeholder="Nom du membre">
+                <button class="btn btn-add" id="addMemberBtn">Ajouter Membre</button>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-save" id="saveDataBtn">Sauvegarder</button>
+                <button class="btn btn-print" id="printBtn">Imprimer</button>
+                <button class="btn btn-clear" id="clearDataBtn">Tout Effacer</button>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table id="paymentTable">
+                <thead>
+                    <tr id="tableHeader">
+                        <!-- En-têtes générés dynamiquement -->
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Données générées dynamiquement -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Note :</strong> Les données sont sauvegardées automatiquement. Cliquez sur "Imprimer" pour une version adaptée au format A4.</p>
+        </div>
+    </div>
+    
+    <!-- Modal de confirmation -->
+    <div class="modal" id="confirmationModal">
+        <div class="modal-content">
+            <h3 class="modal-title">Confirmer le Paiement</h3>
+            <p class="modal-message" id="modalMessage">Êtes-vous sûr de vouloir marquer ce paiement comme réglé ?</p>
+            <div class="modal-actions">
+                <button class="btn btn-save" id="confirmBtn">Oui, marquer comme payé</button>
+                <button class="btn btn-clear" id="cancelBtn">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configuration
+            const mois = [
+                "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+                "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+            ];
+            
+            const montantCotisation = 500; // DA par mois
+            let membres = [];
+            let donneesPaiements = {};
+            let anneeCourante = document.getElementById('year').value;
+            let celluleCourante = null;
+            
+            // Initialisation de la table
+            function initialiserTable() {
+                // Créer l'en-tête du tableau
+                const headerRow = document.getElementById('tableHeader');
+                headerRow.innerHTML = '<th>Membres</th>';
+                
+                mois.forEach(mois => {
+                    const th = document.createElement('th');
+                    th.textContent = mois;
+                    headerRow.appendChild(th);
+                });
+                
+                // Ajouter colonne "Non Payée"
+                const totalTh = document.createElement('th');
+                totalTh.textContent = 'Non Payée';
+                totalTh.style.backgroundColor = '#34495e';
+                headerRow.appendChild(totalTh);
+                
+                // Charger les données
+                chargerDonnees();
+            }
+            
+            // Charger depuis localStorage
+            function chargerDonnees() {
+                const donneesSauvegardees = localStorage.getItem(`cotisation_${anneeCourante}`);
+                
+                if (donneesSauvegardees) {
+                    const donnees = JSON.parse(donneesSauvegardees);
+                    membres = donnees.membres || [];
+                    donneesPaiements = donnees.paiements || {};
+                    genererTable();
+                } else {
+                    // Données de démonstration
+                    membres = ["Amine", "Karim", "Sofia", "Nadia"];
+                    donneesPaiements = {};
+                    
+                    membres.forEach(membre => {
+                        donneesPaiements[membre] = {};
+                        mois.forEach(mois => {
+                            // Certains mois marqués comme payés pour la démo
+                            donneesPaiements[membre][mois] = Math.random() > 0.7;
+                        });
+                    });
+                    
+                    genererTable();
+                    sauvegarderDonnees();
+                }
+            }
+            
+            // Sauvegarder les données
+            function sauvegarderDonnees() {
+                const donnees = {
+                    membres: membres,
+                    paiements: donneesPaiements,
+                    derniereModif: new Date().toISOString()
+                };
+                
+                localStorage.setItem(`cotisation_${anneeCourante}`, JSON.stringify(donnees));
+                afficherNotification("Données sauvegardées avec succès !");
+            }
+            
+            // Générer le tableau
+            function genererTable() {
+                const tableBody = document.getElementById('tableBody');
+                tableBody.innerHTML = '';
+                
+                membres.forEach(membre => {
+                    const ligne = document.createElement('tr');
+                    
+                    // Cellule nom
+                    const celluleNom = document.createElement('td');
+                    celluleNom.className = 'name-cell';
+                    celluleNom.innerHTML = `
+                        ${membre}
+                        <button class="delete-btn" data-membre="${membre}" title="Supprimer">✕</button>
+                    `;
+                    ligne.appendChild(celluleNom);
+                    
+                    let moisImpayes = 0;
+                    
+                    // Cellules des mois
+                    mois.forEach(moisNom => {
+                        const cellule = document.createElement('td');
+                        cellule.className = 'checkbox-cell';
+                        
+                        const estPaye = donneesPaiements[membre] && donneesPaiements[membre][moisNom] === true;
+                        
+                        const checkbox = document.createElement('div');
+                        checkbox.className = `checkbox ${estPaye ? 'paid' : ''}`;
+                        checkbox.textContent = estPaye ? 'X' : '';
+                        checkbox.dataset.membre = membre;
+                        checkbox.dataset.mois = moisNom;
+                        
+                        if (!estPaye) moisImpayes++;
+                        
+                        checkbox.addEventListener('click', function() {
+                            if (!estPaye) {
+                                // Montrer confirmation
+                                celluleCourante = this;
+                                document.getElementById('modalMessage').textContent = 
+                                    `Marquer le paiement de ${membre} pour ${moisNom} comme réglé ? (${montantCotisation} DA)`;
+                                document.getElementById('confirmationModal').style.display = 'flex';
+                            } else {
+                                // Déjà payé, annuler sans confirmation
+                                changerStatutPaiement(membre, moisNom, false);
+                            }
+                        });
+                        
+                        cellule.appendChild(checkbox);
+                        ligne.appendChild(cellule);
+                    });
+                    
+                    // Cellule Non Payée
+                    const celluleTotal = document.createElement('td');
+                    celluleTotal.className = 'total-cell';
+                    const totalDû = moisImpayes * montantCotisation;
+                    celluleTotal.textContent = `${moisImpayes} × 500 = ${totalDû} DA`;
+                    ligne.appendChild(celluleTotal);
+                    
+                    tableBody.appendChild(ligne);
+                });
+                
+                // Événements pour les boutons de suppression
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const membre = this.dataset.membre;
+                        if (confirm(`Supprimer ${membre} ?`)) {
+                            supprimerMembre(membre);
+                        }
+                    });
+                });
+            }
+            
+            // Changer statut de paiement
+            function changerStatutPaiement(membre, mois, estPaye) {
+                if (!donneesPaiements[membre]) {
+                    donneesPaiements[membre] = {};
+                }
+                
+                donneesPaiements[membre][mois] = estPaye;
+                genererTable();
+                sauvegarderDonnees();
+            }
+            
+            // Ajouter un membre
+            function ajouterMembre() {
+                const inputNom = document.getElementById('newMemberName');
+                const nom = inputNom.value.trim();
+                
+                if (nom === '') {
+                    alert('Veuillez entrer un nom');
+                    return;
+                }
+                
+                if (membres.includes(nom)) {
+                    alert('Ce membre existe déjà');
+                    return;
+                }
+                
+                membres.push(nom);
+                donneesPaiements[nom] = {};
+                
+                // Initialiser tous les mois comme non payés
+                mois.forEach(moisNom => {
+                    donneesPaiements[nom][moisNom] = false;
+                });
+                
+                inputNom.value = '';
+                genererTable();
+                sauvegarderDonnees();
+            }
+            
+            // Supprimer un membre
+            function supprimerMembre(membre) {
+                const index = membres.indexOf(membre);
+                if (index !== -1) {
+                    membres.splice(index, 1);
+                    delete donneesPaiements[membre];
+                    genererTable();
+                    sauvegarderDonnees();
+                }
+            }
+            
+            // Effacer toutes les données
+            function effacerToutesDonnees() {
+                if (confirm('Voulez-vous vraiment effacer toutes les données ? Cette action est irréversible.')) {
+                    membres = [];
+                    donneesPaiements = {};
+                    genererTable();
+                    sauvegarderDonnees();
+                }
+            }
+            
+            // Afficher une notification
+            function afficherNotification(message) {
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    padding: 12px 20px;
+                    background-color: #2ecc71;
+                    color: white;
+                    border-radius: 5px;
+                    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+                    z-index: 1000;
+                    font-weight: bold;
+                `;
+                notification.textContent = message;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.style.transition = 'opacity 0.5s';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 500);
+                }, 3000);
+            }
+            
+            // Événements
+            document.getElementById('addMemberBtn').addEventListener('click', ajouterMembre);
+            
+            document.getElementById('newMemberName').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    ajouterMembre();
+                }
+            });
+            
+            document.getElementById('saveDataBtn').addEventListener('click', sauvegarderDonnees);
+            
+            document.getElementById('printBtn').addEventListener('click', function() {
+                // Optimiser pour l'impression
+                document.body.style.fontSize = '12px';
+                window.print();
+            });
+            
+            document.getElementById('clearDataBtn').addEventListener('click', effacerToutesDonnees);
+            
+            document.getElementById('year').addEventListener('change', function() {
+                anneeCourante = this.value;
+                chargerDonnees();
+            });
+            
+            // Modal events
+            document.getElementById('confirmBtn').addEventListener('click', function() {
+                if (celluleCourante) {
+                    const membre = celluleCourante.dataset.membre;
+                    const mois = celluleCourante.dataset.mois;
+                    changerStatutPaiement(membre, mois, true);
+                }
+                document.getElementById('confirmationModal').style.display = 'none';
+                celluleCourante = null;
+            });
+            
+            document.getElementById('cancelBtn').addEventListener('click', function() {
+                document.getElementById('confirmationModal').style.display = 'none';
+                celluleCourante = null;
+            });
+            
+            // Fermer modal en cliquant à l'extérieur
+            document.getElementById('confirmationModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                    celluleCourante = null;
+                }
+            });
+            
+            // Initialiser l'application
+            initialiserTable();
+        });
+    </script>
+</body>
+</html>
